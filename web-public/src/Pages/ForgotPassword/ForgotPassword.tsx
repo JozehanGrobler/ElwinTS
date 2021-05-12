@@ -10,6 +10,7 @@ import CircularProgress from "@material-ui/core/CircularProgress";
 import { useAuthContext } from "../../Context/AuthContext";
 import Typography from "@material-ui/core/Typography";
 import Link from "@material-ui/core/Link";
+import { useAlertContext } from "Context/AlertContext";
 
 const useStyles = makeStyles((theme: Theme) => ({
   container: {
@@ -33,23 +34,27 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
-export function ResetPassword() {
+export function ForgotPassword() {
   const classes = useStyles();
   const history = useHistory();
-  const { authenticated, handleLogin } = useAuthContext();
+  const { authenticated, resetPasswordRequest } = useAuthContext();
+  const alert = useAlertContext();
   if (authenticated) {
     return <Redirect to="/" />;
   }
   return (
     <Formik
-      initialValues={{ username: "", password: "" }}
-      onSubmit={async (_values, { setSubmitting }) => {
-        setSubmitting(true);
-        //TODO
-        const response = await handleLogin("Jozehan", "Password");
-        setSubmitting(false);
-        if (response) {
+      initialValues={{ email: "" }}
+      onSubmit={async (values, { setSubmitting }) => {
+        try {
+          setSubmitting(true);
+          await resetPasswordRequest(values.email);
+          alert("Check your inbox for further details", "error");
+          setSubmitting(false);
+
           history.push("/");
+        } catch (e) {
+          alert(e.message, "error");
         }
       }}
     >
@@ -62,19 +67,8 @@ export function ResetPassword() {
               </div>
               <Typography variant="h4">Reset Password</Typography>
               <TextField
-                type="password"
-                label="Password"
-                name="password"
-                onKeyPress={(e) => {
-                  if (e.code.toLowerCase() === "enter") {
-                    submitForm();
-                  }
-                }}
-              />
-              <TextField
-                type="password"
-                label="Confirm Password"
-                name="confirmPassword"
+                type="email"
+                label="Email"
                 onKeyPress={(e) => {
                   if (e.code.toLowerCase() === "enter") {
                     submitForm();
@@ -84,12 +78,10 @@ export function ResetPassword() {
               <Button
                 variant="contained"
                 disabled={isSubmitting}
-                onClick={() => {
-                  submitForm();
-                }}
+                onClick={submitForm}
                 endIcon={isSubmitting && <CircularProgress size={15} />}
               >
-                Reset Password
+                Request Reset Password
               </Button>
               <Link href="/login">Login</Link>
               <Link href="/register">Register</Link>

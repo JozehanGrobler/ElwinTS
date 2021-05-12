@@ -5,7 +5,7 @@ import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
-import { useHistory } from "react-router-dom";
+// import { useHistory } from "react-router-dom";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -20,7 +20,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export function HomePage() {
   const classes = useStyles();
-  const history = useHistory();
+  // const history = useHistory();
 
   return (
     <div className={classes.root}>

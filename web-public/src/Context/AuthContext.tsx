@@ -7,12 +7,14 @@ type AuthContextType = {
   handleLogin: (username: string, password: string) => Promise<boolean>;
   handleRegister: (username: string, password: string) => Promise<boolean>;
   handleLogout: (route?: string) => void;
+  resetPasswordRequest: (email: string) => Promise<void>;
 };
 const AuthContext = React.createContext<AuthContextType>({
   authenticated: false,
   handleLogin: () => new Promise<boolean>(() => {}),
   handleRegister: () => new Promise<boolean>(() => {}),
   handleLogout: () => null,
+  resetPasswordRequest: () => new Promise<void>(() => {}),
 });
 interface Props {
   children: React.ReactNode;
@@ -22,52 +24,61 @@ export const useAuthContext = () =>
 export function AuthContextProvider({ children }: Props) {
   const [authenticated, setAuthenticated] = React.useState(false);
   const history = useHistory();
-  const [user, setUser] = React.useState<any | null>(null);
   const [loading, setLoading] = React.useState(true);
   const handleLogin = React.useCallback(
     async (email: string, password: string) => {
-      setAuthenticated(true);
-      const response = await auth.signInWithEmailAndPassword(email, password);
+      await auth.signInWithEmailAndPassword(email, password);
       return true;
     },
     []
   );
   const handleRegister = React.useCallback(
     async (email: string, password: string) => {
-      const response = await auth.createUserWithEmailAndPassword(
-        email,
-        password
-      );
-      if (response) {
-        setAuthenticated(true);
-      }
+      await auth.createUserWithEmailAndPassword(email, password);
+
       return true;
     },
     []
   );
   React.useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setUser(user);
+      if (user) {
+        setAuthenticated(true);
+      } else {
+        setAuthenticated(false);
+      }
       setLoading(false);
     });
     return unsubscribe;
   });
 
-  const handleLogout = React.useCallback(async (route?: string) => {
-    setAuthenticated(false);
-    await auth.signOut();
-    history.push(route ?? "/");
+  const handleLogout = React.useCallback(
+    async (route?: string) => {
+      setAuthenticated(false);
+      await auth.signOut();
+      history.push(route ?? "/");
+    },
+    [history]
+  );
+  const resetPasswordRequest = React.useCallback((email: string) => {
+    return auth.sendPasswordResetEmail(email);
   }, []);
 
   const value = React.useMemo(() => {
     return {
-      authenticated: user != null,
+      authenticated,
       handleLogout,
       handleLogin,
       handleRegister,
+      resetPasswordRequest,
     };
-  }, [authenticated, handleLogin, handleLogout]);
-  console.log({ authenticated: user != null, loading });
+  }, [
+    handleLogin,
+    handleLogout,
+    handleRegister,
+    resetPasswordRequest,
+    authenticated,
+  ]);
   return loading ? (
     <>Checking Authentication</>
   ) : (
