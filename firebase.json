@@ -1,0 +1,13 @@
+{
+  "hosting": {
+    "predeploy": ["cd web-public && pwd && yarn build"],
+    "public": "web-public/build",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
