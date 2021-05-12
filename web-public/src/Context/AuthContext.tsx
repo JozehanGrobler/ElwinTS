@@ -34,11 +34,13 @@ export function AuthContextProvider({ children }: Props) {
   );
   const handleRegister = React.useCallback(
     async (email: string, password: string) => {
-      setAuthenticated(true);
       const response = await auth.createUserWithEmailAndPassword(
         email,
         password
       );
+      if (response) {
+        setAuthenticated(true);
+      }
       return true;
     },
     []
@@ -65,6 +67,7 @@ export function AuthContextProvider({ children }: Props) {
       handleRegister,
     };
   }, [authenticated, handleLogin, handleLogout]);
+  console.log({ authenticated: user != null, loading });
   return loading ? (
     <>Checking Authentication</>
   ) : (
